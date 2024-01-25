@@ -8,7 +8,10 @@ Schemas are written in Glean's **Angle** language.
 
 ## Named schemas
 
-We usually create a new named schema for a family of related types and predicates. For example `hack` is the schema for facts about Hack code, `cxx` is the schema for facts about C/C++ and Objective C code, `java` is the schema for facts about Java code, and so on.
+We usually create a new named schema for a family of related types and
+predicates. For example `cxx` is the schema for facts about C/C++ and
+Objective C code, `java` is the schema for facts about Java code,
+`python` is the schema for facts about Python code and so on.
 
 ```
 schema java.1 {
@@ -16,7 +19,13 @@ schema java.1 {
 }
 ```
 
-**What does the .1 suffix mean?** This is the *version* of the schema. You can later create `java.2` which adds and revises types and predicates in `java.1` without breaking existing clients that are using `java.1`.
+:::note
+
+**What does the .1 suffix mean?** This is the *version* of the
+  schema. Versions are a somewhat legacy feature and you should
+  normally leave everything at version 1.
+
+:::
 
 The name of the schema will be also used as the *namespace* for the
 generated Thrift types. You'll notice that each schema gets a separate
@@ -27,13 +36,12 @@ generated [Thrift file](thrift.md) for working with the data in your code.
 A predicate definition looks like this:
 
 ```
-predicate P : KeyType -> ValueType
+predicate P : KeyType
 ```
 where
 
 * `P` is the name of the predicate. e.g. `src.File`
 * `KeyType` is the *key type*
-* `ValueType` is the *value type*
 
 For example, the example schema that we saw in the [Introduction](../introduction.md)
 contains the `Class` predicate:
@@ -53,6 +61,15 @@ This defines:
 * With a key type that is a record, consisting of
    * a field `name`, that has type `string`
    * a field `line`, of type `nat`
+
+A predicate can also have a value:
+
+```
+predicate P : KeyType -> ValueType
+```
+
+We sometimes call these key-value predicates. Most predicates you
+encounter will only have a key.
 
 ## Referring to other predicates
 
@@ -132,14 +149,42 @@ type Loc = {
 }
 ```
 
-:::note
+### What is the difference between a predicate and a type?
 
-Types cannot be recursive or mutually recursive. If you want a
-recursive type, the cycle must go through at least one predicate. For
-more details, see [Recursion](recursion.md).
+Predicates describe facts that are stored in the DB. A type has no
+facts, it's just a name for a type. Types are expanded everywhere
+they're mentioned.
 
-:::
+Predicates are useful for increasing sharing. For example, if we have
 
+```
+predicate P: { a : string, b : [nat] }
+```
+
+and we notice that many `P` facts have the same array of `nat` for the
+`b` field, we could store the data more compactly by making it a predicate:
+
+```
+predicate List: [nat]
+
+predicate P: { a : string, b : List }
+```
+
+Now there will only be one fact for each unique value of `List` stored
+in the DB. Using a `type` would not have the same effect:
+
+```
+type List: [nat]
+
+predicate P: { a : string, b : List }
+```
+
+This is exactly equivalent to the original version; every `P` fact
+will contain the full `[nat]`.
+
+Finally, `type` declarations cannot be recursive or mutually
+recursive. If you want a recursive type, the cycle must go through at
+least one predicate. For more details, see [Recursion](recursion.md).
 
 ## Importing and inheriting
 
@@ -162,6 +207,14 @@ each schema exports a single version of a predicate or type, so the
 unversioned name is unambiguous.
 
 ### Inheritance and revising schemas
+
+:::warning
+
+Schema inheritance is a legacy feature and may be removed in the
+future. The process for safely changing schemas is described in
+[Changing the Schema](changing.md).
+
+:::
 
 ```
 schema example.2 : example.1 {

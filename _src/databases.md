@@ -13,6 +13,7 @@ A Glean database has:
 * A **name**. This is often (but not always) the name of the source code repository from which the facts in the database were collected. Indeed, for historical reasons we sometimes say "repository" or "repo" when we mean "database".
 * A **hash**. This is just an arbitrary string, used to distinguish different versions of databases with the same name. For source code repositories it can be the revision of the repository that was indexed.
 * Some **properties**. A database has a set of key-value pairs associated with it. Some of these are created by Glean itself, and others can be set by a client when the DB is created, or while writing facts. Properties can be used to store arbitrary metadata about the DB, and can be accessed cheaply.
+* A **schema**. The schema is stored in the DB, so that a DB knows the structure of the data it stores. You can query the DB using any schema that is [compatible](schema/changing.md#compatibility) with the DB's schema.
 
 <FbInternalOnly>
 
@@ -20,7 +21,7 @@ At Facebook, we have adopted an informal convention for database names: `<repo>.
 
 </FbInternalOnly>
 
-The name and hash together uniquely identify a database. This is written `<name>/<hash>`, and it is how you refer to a database in most cases when working with Glean. For example, in the shell's `:db` command, or the `--repo` argument to the command-line tools.
+The name and hash together uniquely identify a database. This is written `<name>/<hash>`, and it is how you refer to a database in most cases when working with Glean. For example, in the shell's `:db` command, or the `--db` argument to the command-line tools.
 
 ## Working with local databases
 
@@ -31,8 +32,12 @@ method is chosen by these command-line flags:
 
 * `--service <tier>` or `--service <host>:<port>`  Connect to a remote Glean server.
 * `--db-root <dir>`  Use databases stored locally in the directory `<dir>`
+* `--db-tmp` Create a temporary directory to store DBs and delete it
+  when the program exits.
+* `--db-memory` Store databases in memory rather than on disk.
 
-These flags are accepted by all the Glean command-line tools, including `glean`.
+These flags are accepted by all the Glean command-line tools,
+including `glean` and `glean-server`.
 
 <FbInternalOnly>
 
@@ -59,7 +64,7 @@ like this:
 
 <OssOnly>
 
-* The job invokes `glean kickoff --service <write-server> <args>` to create the database.
+* The job invokes `glean create --service <write-server> <args>` to create the database.
 
 * At this point the database is in the **Incomplete** state. Queries
 are supported in this state, and always reflect the current contents.

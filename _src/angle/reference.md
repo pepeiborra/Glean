@@ -63,7 +63,7 @@ Terms have the following forms:
 *term* ::=<br />
 &nbsp;&nbsp;    *variable* <br />
 
-> A **variable** names the terms that match at this position in the query. The variable can be menioned elsewhere in the query; it doesn't usually make sense for a variable to be mentioned only once, since then you might as well just use a wildcard, see below.
+> A **variable** names the terms that match at this position in the query. The variable can be mentioned elsewhere in the query; it doesn't usually make sense for a variable to be mentioned only once, since then you might as well just use a wildcard, see below.
 
 &nbsp;&nbsp;  `_`<br />
 
@@ -90,6 +90,14 @@ Terms have the following forms:
 > When used as a pattern, matches **term₁** or **term₂**. When used as an expression, generates all values of **term₁** and all values of **term₂**.
 
 > Note: variables mentioned in **term₁** and **term₂** are local to those terms, and may have different types, but only if the variable is not mentioned elsewhere.
+
+&nbsp;&nbsp;`!` *term*
+
+> The negation of a term. Fails if the term matches anything and succeeds otherwise.
+
+&nbsp;&nbsp;`if` *term₁* `then` *term₂* `else` *term₃*
+
+> If *term₁* has matches the `then` branch is taken and *term₃* is never matched against. If *term₁* has no matches then the `else` branch is taken and *term₂* is never matched against.
 
 &nbsp;&nbsp;  *[0-9]+*<br />
 

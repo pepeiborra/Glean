@@ -36,9 +36,11 @@ that we use for building the base image for CI).
 sudo apt-get install \
     g++ \
     cmake \
+    make \
     ninja-build \
     bison flex \
-    git \
+    git curl \
+    rsync m4 \
     libzstd-dev \
     libboost-all-dev \
     libevent-dev \
@@ -49,7 +51,6 @@ sudo apt-get install \
     liblz4-dev \
     liblzma-dev \
     libsnappy-dev \
-    make \
     zlib1g-dev \
     binutils-dev \
     libjemalloc-dev \
@@ -57,17 +58,14 @@ sudo apt-get install \
     pkg-config \
     libunwind-dev \
     libsodium-dev \
-    curl \
     libpcre3-dev \
-    libmysqlclient-dev \
     libfftw3-dev \
     libxxhash-dev
 ```
 
 ### Debian
 
-The package dependencies for Debian current are the same as above for Ubuntu,
-except you need `default-libmysqlclient-dev` instead of `libmysqlclient-dev`.
+The package dependencies for Debian current are the same as above for Ubuntu.
 
 ### Fedora
 
@@ -78,10 +76,11 @@ sudo dnf install \
     g++ \
     make \
     cmake \
+    curl git \
+    rsync m4 \
     ninja-build \
     binutils \
     bison flex \
-    curl \
     libzstd-devel \
     boost-devel \
     libevent-devel \
@@ -93,11 +92,11 @@ sudo dnf install \
     libunwind-devel \
     libsodium-devel \
     pcre-devel \
-    community-mysql-devel \
     fftw-devel \
     xxhash-devel \
     snappy-devel \
-    lz4-devel
+    lz4-devel \
+    libxxhash-dev
 ```
 
 ## Building
@@ -111,7 +110,7 @@ cd Glean
 
 ### Build hsthrift and dependencies
 
-Glean depends on hsthrift, fbthrift, folly, rocksdb and some other core libraries.
+Glean depends on hsthrift, folly, rocksdb and some other core libraries.
 We need to set paths to these that the Glean build can find the thrift compiler
 and associated libraries:
 
@@ -121,10 +120,10 @@ export PKG_CONFIG_PATH=$HOME/.hsthrift/lib/pkgconfig:$HOME/.hsthrift/lib64/pkgco
 export PATH=$PATH:$HOME/.hsthrift/bin
 ```
 
-These will build with either gcc or clang as the base C and C++ compilers. We
-test with gcc-{9,10} and clang-{10,11,12}.
+These will build with either gcc or clang as the base C and C++ compilers. Clang is 
+the best supported C++ compiler for this project.
 
-Now clone [hsthrift](https://github.com/facebookincubator/hsthrift) and
+Now we will clone [hsthrift](https://github.com/facebookincubator/hsthrift) and
 build and install its dependencies:
 ```
 ./install_deps.sh
@@ -157,4 +156,4 @@ On an 6 core machine with 16G of ram you might use, to save 50% or more of the b
 make EXTRA_GHC_OPTS='-j4 +RTS -A128m -n2m -RTS'
 ```
 
-Using clang++-12 and clang-12 as the C and C++ compilers can shave another 25% off the build time, though is less well tested.
+Using clang++-12 and clang-12 as the C and C++ compilers can shave another 25% off the build time.

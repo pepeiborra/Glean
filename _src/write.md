@@ -5,7 +5,6 @@ sidebar_label: Writing data to Glean
 ---
 
 import {OssOnly, FbInternalOnly} from 'internaldocs-fb-helpers';
-import Scribe from './fb/scribe.md';
 import Backup from './fb/backup.md';
 import {SrcFile,SrcFileLink} from '@site/utils';
 
@@ -33,14 +32,8 @@ After the data is ingested by the write tier (`glean.write`), it is backed up an
 A database can be created by a client using any of these methods:
 
 1. Programmatically, using one of the APIs listed in [APIs for Writing](#apis-for-writing).
-2. On the command line: invoke the `glean` command-line tool to send data in JSON format, see [ Creating a database using the command line](#creating-a-database-usin).
-3. In the shell, use `glean shell --db-root=<dir>` and then use the command `:load` to create a DB from a JSON file. See [ Loading a DB from JSON in the shell](#loading-a-db-from-json-i).
-
-<FbInternalOnly>
-
-4. Via Scribe, see [Writing data using Scribe](https://www.internalfb.com/intern/wiki/Glean/Write/#writing-data-using-scrib)
-
-</FbInternalOnly>
+2. On the command line: invoke the `glean` command-line tool to send data in JSON format, see [ Creating a database using the command line](#creating-a-database-using-the-command-line).
+3. In the shell, use `glean shell --db-root=<dir>` and then use the command `:load` to create a DB from a JSON file. See [Loading a DB from JSON in the shell](#loading-a-db-from-json-in-the-shell).
 
 ## Server-driven writing
 
@@ -213,7 +206,7 @@ There is a default retention policy for databases created this way; for details 
 To create a database from a single file of JSON facts:
 
 ```
-glean create --service <write-server> --finish --repo <name>/<hash> <filename>
+glean create --service <write-server> --finish --db <name>/<instance> <filename>
 ```
 where
 
@@ -236,11 +229,11 @@ where
 If the file is more than, say, 100MB, this operation will probably time out sending the data to the server. To send large amounts of data you need to batch it up into multiple files, and then send it like this:
 
 ```
-glean create --service <write-server> --repo <name>/<hash>
-glean write --service <write-server> --repo <name>/<hash> <filename1>
-glean write --service <write-server> --repo <name>/<hash> <filename2>
+glean create --service <write-server> --db <name>/<hash>
+glean write --service <write-server> --db <name>/<hash> <filename1>
+glean write --service <write-server> --db <name>/<hash> <filename2>
 ...
-glean finish --service <write-server> --repo <name>/<hash>
+glean finish --service <write-server> --db <name>/<hash>
 ```
 To find out if your DB made it:
 
@@ -249,7 +242,5 @@ glean shell --service <write-server> :list
 ```
 This will list the DBs available on the write server.
 
-
-<Scribe />
 
 <Backup />

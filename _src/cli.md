@@ -12,30 +12,63 @@ The `glean` tool accepts all the [common
 options](./running.md#common-options) to specify how to connect to access
 the databases.
 
+:::note
+
+The `--db` flag used to be called `--repo`, `--db-name` used to be
+`--repo-name`, and `--db-instance` used to be `--repo-hash`. The
+terminology was changed because databases don't necessarily correspond
+to repositories, and the instance doesn't necessarily correspond to a
+hash or revision of a repository.
+
+:::
+
 The available commands are as follows:
 
 ### `glean create`
 
 Create a new database.
 
-* `--repo NAME/HASH` or `--repo-name NAME --repo-hash HASH`<br />
-Specifies the name and hash of the database
+* `--db NAME/INSTANCE` or `--db-name NAME --db-instance INSTANCE`<br />
+Specifies the name and instance of the database
 * `--finish`<br />
 Also mark the DB as complete
-* `--stacked REPO`<br />
-Create a stacked database on top of `REPO`.
+* `--stacked DB`<br />
+Create a stacked database on top of `DB`.
 * `--property NAME=VALUE`<br />
 Set properties when creating a DB
+* `--update-schema-for-stacked`<br />
+When creating a stacked DB, the schema is taken from the base DB. This
+option specifies that the current schema should be used instead. When
+using this option, creation will fail if the current schema has
+a different definition for any predicate in the base DB schema;
+therefore predicates may only be added or removed relative to the base DB.
 * `FILE..`<br />
 File(s) of facts to write into the database (JSON). See [Writing data
 to Glean](./write.md).
+
+The schema for the new DB is given by:
+
+* the property `glean.schema_id` if specified, or
+
+* if `--stacked` or `--incremental`, then
+  * if `--update-schema-for-stacked` is specified, then the default
+    schema (or the one given by the `--schema` option),
+  * otherwise, the schema from the base DB.
+
+* otherwise the default schema, or the one given by the `--schema`
+  flag.
+
+Note that when creating a stacked DB, it is an error if the schema
+does not agree with the schema in the base DB for any predicate that
+has facts. That is, you cannot change the schema in a stacked DB for
+existing facts in the base DB.
 
 ### `glean write`
 
 Write facts to a database.
 
-* `--repo NAME/HASH` or `--repo-name NAME --repo-hash HASH`<br />
-Specifies the name and hash of the database
+* `--db NAME/INSTANCE` or `--db-name NAME --db-instance INSTANCE`<br />
+Specifies the name and instance of the database
 * `FILE..`<br />
 File(s) of facts to write into the database (JSON). See [Writing data
 to Glean](./write.md).
@@ -46,15 +79,15 @@ Also mark the DB as complete
 
 Notify server that a database is complete.
 
-* `--repo NAME/HASH` or `--repo-name NAME --repo-hash HASH`<br />
-Specifies the name and hash of the database
+* `--db NAME/INSTANCE` or `--db-name NAME --db-instance INSTANCE`<br />
+Specifies the name and instance of the database
 
 ### `glean dump`
 
 Dump the contents of the specified database into a file.
 
-* `--repo NAME/HASH` or `--repo-name NAME --repo-hash HASH`<br />
-Specifies the name and hash of the database
+* `--db NAME/INSTANCE` or `--db-name NAME --db-instance INSTANCE`<br />
+Specifies the name and instance of the database
 * `FILE`<br />
 File to write the facts into
 
@@ -62,8 +95,8 @@ File to write the facts into
 
 Delete a database.
 
-* `--repo NAME/HASH` or `--repo-name NAME --repo-hash HASH`<br />
-Specifies the name and hash of the database
+* `--db NAME/INSTANCE` or `--db-name NAME --db-instance INSTANCE`<br />
+Specifies the name and instance of the database
 
 ### `glean derive`
 
@@ -78,11 +111,26 @@ Maximum number of facts per page
 * `PREDICATE`<br />
 Predicates to derive
 
+### `glean index`
+
+Index some source code using one of the known indexers.
+
+The form of the command in general is
+
+```
+glean index LANGUAGE DIR --db NAME/INSTANCE
+```
+
+There may also be additional options accepted for each `LANGUAGE`; try
+`glean index LANGUAGE --help` to find out.
+
+For information on each indexer, see [Indexers](./indexer/intro.md).
+
 ### `glean query`
 
 Execute an Angle query and print the results, or write them to a file.
 
-* `--repo NAME/HASH` or `--repo-name NAME`<br />
+* `--db NAME/INSTANCE` or `--db-name NAME`<br />
 Specifies the database to query
 
 * `--page-bytes BYTES`<br />
@@ -95,7 +143,7 @@ Maximum number of facts per page
 Fetch nested facts (slower)
 
 * `--limit FACTS`<br />
-Maximum number of facts to query
+Maximum number of facts to query (default: no limit)
 
 * `-o,--output FILE`<br />
 Output the facts to a file
@@ -121,7 +169,7 @@ DB location, see `:list-all` in glean shell.
 
 Alternatively the DB to restore can be specified by:
 
-* `--repo NAME/HASH` or `--repo-name NAME` and (`--repo-hash HASH` or `--date YYY-MM-DD`)
+* `--db NAME/INSTANCE` or `--db-name NAME` and (`--db-instance INSTANCE` or `--date YYY-MM-DD`)
 
 ### `glean validate`
 
@@ -130,8 +178,8 @@ testing and debugging Glean itself.
 
  a local database
 
-* `--repo NAME/HASH` or `--repo-name NAME --repo-hash HASH`<br />
-Specifies the name and hash of the database
+* `--db NAME/INSTANCE` or `--db-name NAME --db-instance INSTANCE`<br />
+Specifies the name and instance of the database
 
 * `--no-typecheck`<br />
 Don't typecheck facts.
@@ -154,8 +202,8 @@ Name of schema file
 
 Get fact counts and sizes. Like the `:statistics` command in the shell.
 
-* `--repo NAME/HASH` or `--repo-name NAME --repo-hash HASH`<br />
-Specifies the name and hash of the database
+* `--db NAME/INSTANCE` or `--db-name NAME --db-instance INSTANCE`<br />
+Specifies the name and instance of the database
 
 ### `glean unfinish`
 
@@ -164,5 +212,5 @@ state). This is for testing and development and not for routine use:
 once a database is marked complete it could be replicated, so we
 shouldn't be modifying it.
 
-* `--repo NAME/HASH` or `--repo-name NAME --repo-hash HASH`<br />
-Specifies the name and hash of the database
+* `--db NAME/INSTANCE` or `--db-name NAME --db-instance INSTANCE`<br />
+Specifies the name and instance of the database
