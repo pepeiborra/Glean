@@ -12,17 +12,21 @@ The `glean` tool accepts all the [common
 options](./running.md#common-options) to specify how to connect to access
 the databases.
 
-:::note
-
-The `--db` flag used to be called `--repo`, `--db-name` used to be
-`--repo-name`, and `--db-instance` used to be `--repo-hash`. The
-terminology was changed because databases don't necessarily correspond
-to repositories, and the instance doesn't necessarily correspond to a
-hash or revision of a repository.
-
-:::
-
 The available commands are as follows:
+
+### `glean list`
+
+List the available databases.
+
+* `[DBNAME]` <br />
+List only databases that match `DBNAME`
+* `--format (tty|plain|json|compact-json)` <br />
+Various different formats for the output. JSON is useful for
+processing and filtering the result in a script, e.g. using `jq`.
+* `-v` / `--verbose` <br />
+Show the full metadata associated with each database.
+* `--include-backups` <br />
+Also list databases in backup storage (note: may be slow).
 
 ### `glean create`
 
@@ -43,8 +47,8 @@ using this option, creation will fail if the current schema has
 a different definition for any predicate in the base DB schema;
 therefore predicates may only be added or removed relative to the base DB.
 * `FILE..`<br />
-File(s) of facts to write into the database (JSON). See [Writing data
-to Glean](./write.md).
+File(s) of facts to write into the database. Accepts JSON or compressed (zstd) JSONs.
+See [Writing data to Glean](./write.md).
 
 The schema for the new DB is given by:
 
@@ -70,8 +74,8 @@ Write facts to a database.
 * `--db NAME/INSTANCE` or `--db-name NAME --db-instance INSTANCE`<br />
 Specifies the name and instance of the database
 * `FILE..`<br />
-File(s) of facts to write into the database (JSON). See [Writing data
-to Glean](./write.md).
+File(s) of facts to write into the database. Accepts JSON or compressed (zstd) JSONs.
+See [Writing data to Glean](./write.md).
 * `--finish`<br />
 Also mark the DB as complete
 
@@ -139,7 +143,7 @@ Maximum number of bytes per page
 * `--page-facts FACTS`<br />
 Maximum number of facts per page
 
-* `--recursive`<br />
+* `--expand`<br />
 Fetch nested facts (slower)
 
 * `--limit FACTS`<br />
@@ -150,6 +154,9 @@ Output the facts to a file
 
 * `--stats FILE`<br />
 Output stats to a file ('-' for stdout)
+
+* `--profile`<br />
+Get full profiling information; use with `--stats` to include facts_searched
 
 * `--timeout MILLISECONDS`
 Override the default query timeout
@@ -169,7 +176,7 @@ DB location, see `:list-all` in glean shell.
 
 Alternatively the DB to restore can be specified by:
 
-* `--db NAME/INSTANCE` or `--db-name NAME` and (`--db-instance INSTANCE` or `--date YYY-MM-DD`)
+* `--db NAME/INSTANCE` or `--db-name NAME` and (`--db-instance INSTANCE` or `--date YYY-MM-DD` or `--latest`)
 
 ### `glean validate`
 

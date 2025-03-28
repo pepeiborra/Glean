@@ -60,7 +60,13 @@ sudo apt-get install \
     libsodium-dev \
     libpcre3-dev \
     libfftw3-dev \
-    libxxhash-dev
+    libxxhash-dev \
+    libgtest-dev \
+    libfmt-dev \
+    clang-12 \
+    llvm-12 \
+    libclang-12-dev \
+    fast_float-devel
 ```
 
 ### Debian
@@ -96,7 +102,12 @@ sudo dnf install \
     xxhash-devel \
     snappy-devel \
     lz4-devel \
-    libxxhash-dev
+    gtest-devel \
+    fmt-devel \
+    xxhash \
+    clang \
+    llvm12-devel \
+    libfast-float-dev
 ```
 
 ## Building
@@ -120,7 +131,12 @@ export PKG_CONFIG_PATH=$HOME/.hsthrift/lib/pkgconfig:$HOME/.hsthrift/lib64/pkgco
 export PATH=$PATH:$HOME/.hsthrift/bin
 ```
 
-These will build with either gcc or clang as the base C and C++ compilers. Clang is 
+On Fedora/CentOS and possibly other non-Debian systems, you also need to set:
+```
+export LIBRARY_PATH=$HOME/.hsthrift/lib:$HOME/.hsthrift/lib64:$LIBRARY_PATH
+```
+
+These will build with either gcc or clang as the base C and C++ compilers. Clang is
 the best supported C++ compiler for this project.
 
 Now we will clone [hsthrift](https://github.com/facebookincubator/hsthrift) and
@@ -134,6 +150,7 @@ build and install its dependencies:
 Now you can build all the Glean parts:
 
 ```
+cabal update
 make
 ```
 
